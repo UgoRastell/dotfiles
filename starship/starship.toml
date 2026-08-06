@@ -1,0 +1,28 @@
+# Prompt starship — sobre et informatif
+add_newline = false
+
+format = """
+$directory$git_branch$git_status$c$cmd_duration$character"""
+
+[directory]
+truncation_length = 3
+style = "bold cyan"
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+style = "yellow"
+
+[c]
+symbol = "C "
+style = "bold blue"
+
+[cmd_duration]
+min_time = 2000
+style = "dim yellow"
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
