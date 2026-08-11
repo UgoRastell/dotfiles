@@ -18,6 +18,17 @@ link() {
 
 link "$DIR/zsh/.zshrc"              "$HOME/.zshrc"
 link "$DIR/starship/starship.toml"  "$HOME/.config/starship.toml"
+link "$DIR/vim/.vimrc"              "$HOME/.vimrc"
+
+# Plugin 42header (header norme 42, touche F1)
+if [ ! -d "$HOME/.vim/pack/42/start/42header" ]; then
+	if command -v git >/dev/null 2>&1; then
+		git clone --depth 1 https://github.com/42Paris/42header.git \
+			"$HOME/.vim/pack/42/start/42header" \
+			&& echo "✓ plugin 42header installé" \
+			|| echo "→ échec du clone de 42header (pas de réseau ?), vim marche sans"
+	fi
+fi
 
 echo ""
 echo "Terminé. Paquets recommandés (si tu as les droits) :"
