@@ -53,8 +53,21 @@ alias ..='cd ..'
 alias norm='norminette'
 alias ccw='cc -Wall -Wextra -Werror'
 alias vg='valgrind --leak-check=full --show-leak-kinds=all'
-[ -f ~/francinette/tester.sh ] && alias francinette=~/francinette/tester.sh && alias paco=~/francinette/tester.sh
 [ -f ~/mini-moulinette/mini-moul.sh ] && alias mini=~/mini-moulinette/mini-moul.sh
+
+# Tests de la libft (francinette est archivée depuis déc. 2024 et ne marche plus).
+# Le tester vit hors du projet : rien à ignorer dans le dépôt de rendu.
+#   libfttest          → toutes les fonctions
+#   libfttest split    → une seule
+libfttest() {
+	[ -f libft.h ] || {
+		echo "libft.h introuvable — à lancer depuis ton dossier libft."; return 1
+	}
+	[ -d ~/libftTester ] ||
+		git clone -q https://github.com/Tripouille/libftTester.git ~/libftTester ||
+		return 1
+	make -C ~/libftTester LIBFT_PATH="$PWD" "${@:-m}"
+}
 
 # Compile + exécute d'un coup : cr main.c [args...]
 cr() {
