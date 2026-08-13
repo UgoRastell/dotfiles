@@ -1,0 +1,39 @@
+#!/bin/sh
+# Hook pre-commit — refuse tout commit dont le C n'est pas conforme à la norme 42.
+# Contourner ponctuellement : git commit --no-verify
+
+# Sur un poste sans norminette (ou hors WSL), on laisse passer plutôt que de bloquer.
+if ! command -v norminette >/dev/null 2>&1; then
+	echo "pre-commit : norminette introuvable, vérification ignorée."
+	exit 0
+fi
+
+# Fichiers .c/.h ajoutés, copiés ou modifiés dans l'index
+files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.[ch]$')
+if [ -z "$files" ]; then
+	exit 0
+fi
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# On vérifie le contenu de l'INDEX (ce qui sera réellement commité), pas celui
+# du disque : ils diffèrent dès qu'on a stagé une partie seulement des modifs.
+while IFS= read -r f; do
+	mkdir -p "$tmp/$(dirname "$f")"
+	git show ":$f" > "$tmp/$f"
+done <<EOF
+$files
+EOF
+
+out=$(cd "$tmp" && norminette . 2>&1)
+if [ $? -ne 0 ]; then
+	echo "$out" | grep -v ': OK!'
+	echo ""
+	echo "✗ Commit refusé : la norme 42 n'est pas respectée."
+	echo "  Corrige les erreurs ci-dessus, ou force avec : git commit --no-verify"
+	exit 1
+fi
+
+echo "✓ norminette : OK"
+exit 0

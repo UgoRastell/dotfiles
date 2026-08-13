@@ -61,6 +61,25 @@ cr() {
 	cc -Wall -Wextra -Werror "$1" -o /tmp/cr_out && /tmp/cr_out "${@:2}"
 }
 
+# Installe le hook pre-commit (norminette) dans le dépôt courant.
+# Les nouveaux dépôts l'ont déjà via init.templateDir ; ceci sert aux anciens.
+42hook() {
+	local root
+	root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+		echo "Pas dans un dépôt git."; return 1
+	}
+	cp ~/dotfiles/git/template/hooks/pre-commit "$root/.git/hooks/pre-commit" &&
+		chmod +x "$root/.git/hooks/pre-commit" &&
+		echo "✓ hook pre-commit installé dans $root"
+}
+
+# Dépose le template de Makefile 42 dans le dossier courant
+42make() {
+	[ -e Makefile ] && { echo "Makefile déjà présent, rien fait."; return 1; }
+	cp ~/dotfiles/templates/Makefile . &&
+		echo "✓ Makefile créé — ajuste NAME et SRCS."
+}
+
 # ── Prompt (starship si dispo, sinon prompt zsh simple) ───────
 if command -v starship >/dev/null 2>&1; then
 	eval "$(starship init zsh)"

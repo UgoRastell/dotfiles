@@ -30,6 +30,14 @@ if [ ! -d "$HOME/.vim/pack/42/start/42header" ]; then
 	fi
 fi
 
+# Hook pre-commit (norminette) appliqué aux dépôts créés ou clonés ensuite.
+# Les dépôts déjà existants ne sont pas touchés : y lancer `42hook`.
+if command -v git >/dev/null 2>&1; then
+	chmod +x "$DIR/git/template/hooks/pre-commit"
+	git config --global init.templateDir "$DIR/git/template"
+	echo "✓ init.templateDir → hook norminette sur les prochains git init/clone"
+fi
+
 echo ""
 echo "Terminé. Paquets recommandés (si tu as les droits) :"
 echo "  Arch   : sudo pacman -S zsh zsh-autosuggestions zsh-syntax-highlighting zsh-completions starship"
