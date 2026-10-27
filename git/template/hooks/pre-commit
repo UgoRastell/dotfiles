@@ -2,14 +2,27 @@
 # Hook pre-commit — refuse tout commit dont le C n'est pas conforme à la norme 42.
 # Contourner ponctuellement : git commit --no-verify
 
+# git envoie la sortie des hooks sur stderr : c'est lui qu'on teste pour les couleurs
+if [ -t 2 ]; then
+	E=$(printf '\033')
+	G="$E[32m" Y="$E[33m" RED="$E[31m" D="$E[2m" R="$E[0m"
+else
+	G='' Y='' RED='' D='' R=''
+fi
+
+# norminette s'installe souvent dans ~/.local/bin (pip/pipx sans sudo), absent du
+# PATH quand git est lancé hors de zsh (bash, VS Code…).
+PATH="$HOME/.local/bin:$PATH"
+
 # Sur un poste sans norminette (ou hors WSL), on laisse passer plutôt que de bloquer.
 if ! command -v norminette >/dev/null 2>&1; then
-	echo "pre-commit : norminette introuvable, vérification ignorée."
+	echo "${Y}⚠ pre-commit : norminette introuvable, vérification ignorée.${R}"
 	exit 0
 fi
 
-# Fichiers .c/.h ajoutés, copiés ou modifiés dans l'index
-files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.[ch]$')
+# Fichiers .c/.h ajoutés, copiés, modifiés ou renommés dans l'index
+# (R compris : un `git mv` suivi d'une modif a le statut R, pas M)
+files=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.[ch]$')
 if [ -z "$files" ]; then
 	exit 0
 fi
@@ -28,12 +41,13 @@ EOF
 
 out=$(cd "$tmp" && norminette . 2>&1)
 if [ $? -ne 0 ]; then
-	echo "$out" | grep -v ': OK!'
+	echo "$out" | grep -v -e ': OK!' -e '^Setting locale' | sed "s/^\(.*\): Error!$/${RED}✗ \1${R}/"
 	echo ""
-	echo "✗ Commit refusé : la norme 42 n'est pas respectée."
-	echo "  Corrige les erreurs ci-dessus, ou force avec : git commit --no-verify"
+	echo "${RED}✗ Commit refusé : la norme 42 n'est pas respectée.${R}"
+	echo "${D}  Corrige les erreurs ci-dessus, ou force avec : git commit --no-verify${R}"
 	exit 1
 fi
 
-echo "✓ norminette : OK"
+n=$(printf '%s\n' "$files" | wc -l | tr -d ' ')
+echo "${G}✓ norminette : OK${R} ${D}($n fichier(s))${R}"
 exit 0
