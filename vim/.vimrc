@@ -105,6 +105,32 @@ augroup END
 let g:user42 = 'urastell'
 let g:mail42 = 'ugo.rastell@learner.42.tech'
 
+" --- Formatage à la norme (c_formatter_42, pip install --user c-formatter-42) ---
+" Le buffer passe par le formateur via stdin : en cas d'erreur, il reste intact
+" (un simple :%!c_formatter_42 le remplacerait par le message d'erreur).
+" Ne règle pas tout : fonctions trop longues, trop de variables… restent à faire.
+function! Format42() abort
+	if !executable('c_formatter_42')
+		echohl WarningMsg | echo 'c_formatter_42 introuvable : pip install --user c-formatter-42' | echohl None
+		return
+	endif
+	let l:view = winsaveview()
+	" Texte + saut de ligne final : sans lui (cas d'une liste), le formateur
+	" saute des étapes, comme séparer « int a = 1; » en déclaration + affectation.
+	let l:out = systemlist('c_formatter_42', join(getline(1, '$'), "\n") . "\n")
+	if v:shell_error
+		echohl ErrorMsg | echo join(l:out, "\n") | echohl None
+		return
+	endif
+	if l:out !=# getline(1, '$')
+		call setline(1, l:out)
+		if line('$') > len(l:out)
+			silent execute (len(l:out) + 1) . ',$delete _'
+		endif
+	endif
+	call winrestview(l:view)
+endfunction
+
 " --- Raccourcis pratiques ---
 " <buffer> : chaque raccourci ne vaut que pour le fichier où il a été défini,
 " sinon ouvrir un .py ferait lancer python3 sur les .c avec F5.
@@ -114,6 +140,8 @@ augroup dotfiles_keys
 	autocmd FileType c nnoremap <buffer> <F5> :w<CR>:!cc -Wall -Wextra -Werror %:S -o %:r:S && %:p:r:S<CR>
 	" F6 : lancer norminette sur le fichier courant
 	autocmd FileType c nnoremap <buffer> <F6> :w<CR>:!norminette %:S<CR>
+	" F7 : reformater le fichier courant à la norme (c_formatter_42)
+	autocmd FileType c nnoremap <buffer> <F7> :call Format42()<CR>
 	" F5 : exécuter le script Python courant
 	autocmd FileType python nnoremap <buffer> <F5> :w<CR>:!python3 %:S<CR>
 augroup END
