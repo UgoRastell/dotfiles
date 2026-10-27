@@ -1,0 +1,71 @@
+#!/bin/sh
+# 42funcs — liste les fonctions externes appelées par un binaire ou une bibliothèque,
+# et signale celles qui ne sont pas dans la liste autorisée du sujet.
+#
+# Usage : 42funcs [fichier] [fonctions autorisées...]
+#   42funcs                              → liste ce qu'utilise le NAME du Makefile
+#   42funcs read, write, malloc, free    → idem, en vérifiant (copier-coller du sujet)
+#   42funcs ./pipex open close fork      → fichier précis
+#
+# Les .o sont recompilés par le Makefile : lancer `make` avant.
+
+if [ -t 1 ]; then
+	E=$(printf '\033')
+	G="$E[32m" RED="$E[31m" M="$E[35m" D="$E[2m" R="$E[0m"
+else
+	G='' RED='' M='' D='' R=''
+fi
+
+# Fichier à analyser : le 1er argument s'il existe, sinon le NAME du Makefile
+if [ $# -gt 0 ] && [ -f "$1" ]; then
+	file=$1; shift
+else
+	[ -f Makefile ] || { echo "Pas de Makefile ici : 42funcs <fichier> [fonctions...]"; exit 1; }
+	file=$(sed -n 's/^NAME[[:space:]]*[:?]*=[[:space:]]*//p' Makefile 2>/dev/null | head -1)
+	[ -n "$file" ] || { echo "Pas de NAME dans le Makefile : 42funcs <fichier> [fonctions...]"; exit 1; }
+	[ -f "$file" ] || { echo "$file introuvable : lancer make d'abord."; exit 1; }
+fi
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# Symboles appelés mais définis ailleurs. Pour une .a, on retire ceux qu'un autre
+# .o de l'archive définit (ft_strlen appelé par ft_strdup n'est pas externe).
+# On écarte les symboles en _ : ajoutés par le compilateur ou la libc
+# (__libc_start_main, __stack_chk_fail, __cxa_finalize…), pas par ton code.
+# (awk sur « U nom » : ignore les lignes vides et les en-têtes « x.o: » d'une .a)
+nm -u "$file" 2>/dev/null | awk '$1 == "U" {print $2}' | sed 's/@.*//' | grep -v '^_' | sort -u > "$tmp/undef"
+nm --defined-only "$file" 2>/dev/null | awk 'NF >= 3 {print $3}' | sort -u > "$tmp/def"
+comm -23 "$tmp/undef" "$tmp/def" > "$tmp/used"
+
+# Liste autorisée : accepte « read, write, malloc » collé depuis le sujet
+printf '%s\n' "$@" | tr ', ' '\n\n' | grep -v '^$' | sort -u > "$tmp/allowed"
+
+n=$(grep -c '' "$tmp/used")
+printf "${M}── %s${R} ${D}: %s fonction(s) externe(s)${R}\n" "$file" "$n"
+[ "$n" -eq 0 ] && exit 0
+
+if [ ! -s "$tmp/allowed" ]; then
+	sed 's/^/  • /' "$tmp/used"
+	printf "${D}  Ajoute la liste du sujet en arguments pour vérifier : 42funcs read, write, malloc…${R}\n"
+	exit 0
+fi
+
+bad=0
+while IFS= read -r f; do
+	if grep -qx "$f" "$tmp/allowed"; then
+		printf "  ${G}✓${R} %s\n" "$f"
+	else
+		printf "  ${RED}✗ %s${R} ${D}← pas dans la liste${R}\n" "$f"
+		bad=$((bad + 1))
+	fi
+done < "$tmp/used"
+
+if [ "$bad" -eq 0 ]; then
+	printf "${G}✓ uniquement des fonctions autorisées${R}\n"
+else
+	printf "${RED}✗ %s fonction(s) interdite(s)${R}\n" "$bad"
+	printf "${D}  (le compilateur remplace parfois printf par puts, ou ajoute memset/memcpy :\n"
+	printf "   chercher d'où vient l'appel avant de paniquer)${R}\n"
+	exit 1
+fi

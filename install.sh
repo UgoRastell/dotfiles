@@ -42,6 +42,8 @@ vim_plugin() {
 	fi
 }
 
+chmod +x "$DIR"/bin/*      # scripts 42relink, 42funcs (mis dans le PATH par .zshrc)
+
 section "Liens symboliques"
 link "$DIR/zsh/.zshrc"              "$HOME/.zshrc"
 link "$DIR/starship/starship.toml"  "$HOME/.config/starship.toml"

@@ -1,0 +1,51 @@
+#!/bin/sh
+# 42relink — vérifie qu'un second `make` ne refait rien, comme le teste l'évaluateur.
+# Usage : 42relink [règle...]     (par défaut : la règle par défaut, puis bonus si elle existe)
+
+if [ -t 1 ]; then
+	E=$(printf '\033')
+	G="$E[32m" RED="$E[31m" M="$E[35m" D="$E[2m" R="$E[0m"
+else
+	G='' RED='' M='' D='' R=''
+fi
+
+[ -f Makefile ] || [ -f makefile ] || {
+	echo "Pas de Makefile ici."; exit 1
+}
+
+if [ $# -eq 0 ]; then
+	set -- ""
+	grep -q '^bonus[[:space:]]*:' Makefile 2>/dev/null && set -- "" bonus
+fi
+
+marker=$(mktemp)
+trap 'rm -f "$marker"' EXIT
+fail=0
+
+for rule in "$@"; do
+	label=${rule:-make}
+	[ -n "$rule" ] && label="make $rule"
+	printf "${M}── %s${R}\n" "$label"
+
+	# 1er passage : construire (ses erreurs de compilation sont affichées)
+	if ! make $rule >/dev/null; then
+		printf "  ${RED}✗ la compilation échoue, relink non testable${R}\n"
+		fail=1; continue
+	fi
+
+	# 2e passage : aucun fichier ne doit être réécrit. On compare les dates à un
+	# marqueur ; la pause couvre les systèmes de fichiers à la seconde près (NFS).
+	sleep 1; touch "$marker"; sleep 1
+	out=$(make $rule 2>&1)
+	rebuilt=$(find . -path ./.git -prune -o -type f -newer "$marker" -print)
+
+	if [ -z "$rebuilt" ]; then
+		printf "  ${G}✓ pas de relink${R} ${D}(%s)${R}\n" "$(echo "$out" | tail -1)"
+	else
+		printf "  ${RED}✗ relink : le 2e passage a réécrit${R}\n"
+		echo "$rebuilt" | sed "s|^\./|    |"
+		fail=1
+	fi
+done
+
+exit $fail

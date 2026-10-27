@@ -8,7 +8,7 @@ DOTFILES=${${(%):-%x}:A:h:h}
 # ~/.local/bin : là où atterrissent norminette (pip/pipx) et starship installés
 # sans sudo. zsh ne lit pas ~/.profile, il faut donc l'ajouter ici.
 typeset -U path               # pas de doublons dans le PATH
-path=(~/.local/bin $path)
+path=(~/.local/bin $DOTFILES/bin $path)   # bin/ : scripts du dépôt (42relink, 42funcs)
 
 # ── Historique ────────────────────────────────────────────────
 HISTFILE=~/.zsh_history
