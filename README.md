@@ -33,6 +33,7 @@ norminette et starship installés sans droits.
 | `starship/starship.toml` | prompt sur deux lignes : dossier, branche + état git, version de C/Python, durée des commandes, heure |
 | `vim/.vimrc` | norme 42 (vraies tabs visibles, colonne 81 marquée, espaces en fin de ligne en rouge), barre de statut colorée, thème catppuccin, plugin 42header |
 | `git/template/hooks/pre-commit` | bloque tout commit dont le C n'est pas conforme à la norme |
+| `git/ignore` | `.gitignore` global : `.o`, `.a`, `a.out`, `obj/`… ne partent jamais dans un rendu |
 | `templates/Makefile` | squelette de Makefile 42 (no-relink, dépendances des headers, sortie colorée) |
 
 ## Raccourcis
@@ -41,7 +42,9 @@ norminette et starship installés sans droits.
 
 | Commande | Effet |
 | --- | --- |
+| `42new push_swap` | nouveau projet : `src/main.c`, `include/push_swap.h`, Makefile prérempli, `git init` (`42new libft.a` pour une bibliothèque) |
 | `ccw` | `cc -Wall -Wextra -Werror` |
+| `ccd` | idem + `-g3 -fsanitize=address,undefined` : debug, pointe la ligne fautive |
 | `cr main.c [args]` | compile et exécute d'un coup |
 | `norm` | `norminette` |
 | `vg ./prog` | valgrind complet (fuites + origine des valeurs non initialisées) |
@@ -57,6 +60,7 @@ norminette et starship installés sans droits.
 | `F1` | insère / met à jour le header 42 |
 | `F5` | C : compile avec les flags de la norme et exécute · Python : exécute |
 | `F6` | norminette sur le fichier courant |
+| `F7` | reformate le fichier à la norme ([c_formatter_42](https://github.com/dawnbeen/c_formatter_42)) ; le buffer reste intact en cas d'erreur |
 
 ## Hook norminette
 
