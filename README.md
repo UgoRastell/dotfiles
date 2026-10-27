@@ -138,10 +138,16 @@ Le hook passe norminette sur ce que tu commites. S'il refuse, il affiche les err
 **6. Avant le rendu**
 
 ```sh
-make fclean && make && make       # compile proprement, et le 2e make ne doit rien refaire
+make fclean && 42relink           # compile proprement et vérifie qu'un 2e make ne refait rien
+42funcs read, write, malloc, free # colle ici la liste « fonctions autorisées » du sujet
 norminette src include            # tout doit être OK!
 git status                        # rien d'oublié, rien en trop
 ```
+
+`42relink` teste aussi `make bonus` si la règle existe. `42funcs` liste chaque fonction externe
+appelée par ton binaire (le `NAME` du Makefile) et marque en rouge celles absentes du sujet.
+Une fonction interdite ou un relink, c'est souvent 0 à l'évaluation : ces deux commandes en une
+minute évitent la mauvaise surprise.
 
 Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour les bonus).
 
@@ -155,6 +161,7 @@ Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour 
 | `git/template/hooks/pre-commit` | bloque tout commit dont le C n'est pas conforme à la norme |
 | `git/ignore` | `.gitignore` global : `.o`, `.a`, `a.out`, `obj/`… ne partent jamais dans un rendu |
 | `templates/Makefile` | squelette de Makefile 42 (no-relink, dépendances des headers, sortie colorée) |
+| `bin/` | scripts ajoutés au `PATH` : `42relink`, `42funcs` (marchent aussi depuis bash) |
 
 ## Raccourcis
 
@@ -170,6 +177,8 @@ Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour 
 | `vg ./prog` | valgrind complet (fuites + origine des valeurs non initialisées) |
 | `libfttest` | [libftTester](https://github.com/Tripouille/libftTester) : partie obligatoire ; `b` bonus, `a` tout, `split` une fonction |
 | `mini` | mini-moulinette, si elle est clonée dans `~/mini-moulinette` |
+| `42relink` | lance `make` deux fois (et `make bonus` s'il existe) : ✗ si le 2e passage réécrit un fichier |
+| `42funcs [liste]` | fonctions externes appelées par le `NAME` du Makefile ; avec la liste du sujet, ✗ sur les interdites |
 | `42hook` | installe le hook norminette dans le dépôt courant |
 | `42make` | dépose le template de Makefile dans le dossier courant |
 
@@ -234,4 +243,6 @@ sont simplement ignorés ; starship peut s'installer sans droits
 | F7 : `c_formatter_42 introuvable` | `pip install --user c-formatter-42` |
 | Vim : couleurs fades | le terminal ne gère pas les vraies couleurs : vim passe sur le thème `habamax`, c'est normal |
 | `42hook`/`42make`/`42new` : fichier introuvable | `~/.zshrc` n'est pas un lien vers le dépôt : relancer `install.sh` |
+| `42funcs` signale `puts` ou `memset` que tu n'as pas écrits | le compilateur remplace parfois `printf("…\n")` par `puts` ou ajoute `memset` pour initialiser un tableau : retrouver la ligne en cause et la réécrire |
+| `42relink` : ✗ alors que le Makefile semble bon | une règle sans fichier cible (souvent `bonus` en `.PHONY` qui relance `ar`) : la faire dépendre de fichiers réels |
 | Un `.zshrc` / `.vimrc` d'avant a disparu | il a été sauvegardé en `~/.zshrc.bak` / `~/.vimrc.bak` |
