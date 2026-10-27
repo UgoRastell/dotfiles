@@ -102,7 +102,7 @@ augroup END
 
 " --- Header 42 (plugin 42header) ---
 " F1 insère/met à jour le header, il se met aussi à jour à la sauvegarde
-let g:user42 = 'ugo'
+let g:user42 = 'urastell'
 let g:mail42 = 'ugo.rastell@learner.42.tech'
 
 " --- Raccourcis pratiques ---
