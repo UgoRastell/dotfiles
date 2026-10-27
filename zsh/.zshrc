@@ -73,6 +73,9 @@ alias ..='cd ..'
 # ── Alias 42 ──────────────────────────────────────────────────
 alias norm='norminette'
 alias ccw='cc -Wall -Wextra -Werror'
+# Debug : -g3 pour gdb, sanitizers pour pointer la ligne exacte d'un dépassement
+# mémoire ou d'un comportement indéfini. Jamais dans un Makefile de rendu.
+alias ccd='cc -Wall -Wextra -Werror -g3 -fsanitize=address,undefined'
 alias vg='valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes'
 [ -f ~/mini-moulinette/mini-moul.sh ] && alias mini=~/mini-moulinette/mini-moul.sh
 
@@ -120,6 +123,44 @@ cr() {
 	[ -e Makefile ] && { echo "Makefile déjà présent, rien fait."; return 1; }
 	cp "$DOTFILES/templates/Makefile" . &&
 		print -P "%F{green}✓%f Makefile créé — ajuste NAME et SRCS."
+}
+
+# Squelette de projet 42 : src/, include/, Makefile prérempli, git init.
+#   42new push_swap   → exécutable, avec un main.c
+#   42new libft.a     → bibliothèque statique (règle $(AR))
+# Le hook norminette est posé par git init via init.templateDir.
+42new() {
+	[ -n "$1" ] || { echo "usage : 42new <nom> (nom.a pour une bibliothèque)"; return 1; }
+	[ -e "$1" ] && { echo "$1 existe déjà, rien fait."; return 1; }
+	local name=$1 base=${1%.a}
+	local guard=${(U)base//[^A-Za-z0-9]/_}_H
+
+	mkdir -p "$base"/{src,include} || return 1
+	sed -e "s/^NAME\t\t:= .*/NAME\t\t:= $name/" \
+		-e 's/^INC_DIR\t\t:= .*/INC_DIR\t\t:= include/' \
+		-e 's/^SRC_DIR\t\t:= .*/SRC_DIR\t\t:= src/' \
+		-e '/^SRCS\t\t:=/{N;s/.*/SRCS\t\t:= main.c/}' \
+		"$DOTFILES/templates/Makefile" > "$base/Makefile"
+	printf '#ifndef %s\n# define %s\n\n#endif\n' "$guard" "$guard" > "$base/include/$base.h"
+
+	if [[ $name == *.a ]]; then
+		sed -i 's/^SRCS\t\t:= main.c/SRCS\t\t:=/' "$base/Makefile"
+	else
+		# Exécutable : on remplace la règle d'archive par l'édition de liens
+		sed -i 's/^\t$(Q)$(AR) $(NAME) $(OBJS)$/\t$(Q)$(CC) $(CFLAGS) $(OBJS) -o $(NAME)/' "$base/Makefile"
+		printf '#include "%s.h"\n\nint\tmain(int argc, char **argv)\n{\n\t(void)argc;\n\t(void)argv;\n\treturn (0);\n}\n' \
+			"$base" > "$base/src/main.c"
+	fi
+
+	# Le nom de l'exécutable est propre au projet : le gitignore global ne peut pas
+	# le connaître. .git/info/exclude ignore comme un .gitignore, sans être commité.
+	# (info/ n'existe pas : init.templateDir remplace le modèle par défaut de git)
+	git -C "$base" init -q &&
+		{ [[ $name == *.a ]] ||
+			{ mkdir -p "$base/.git/info" && echo "/$name" >> "$base/.git/info/exclude" } } &&
+		print -P "%F{green}✓%f $base/ créé %F{8}(src/, include/$base.h, Makefile, git init)%f" &&
+		print -P "  %F{8}F1 dans vim pour ajouter le header 42 à chaque fichier%f"
+	cd "$base"
 }
 
 # ── Prompt (starship si dispo, sinon équivalent en zsh pur) ───
