@@ -60,6 +60,19 @@ if command -v git >/dev/null 2>&1; then
 	ok "init.templateDir → hook sur les prochains git init/clone"
 fi
 
+# .gitignore global : .o, .a, a.out… ne partent jamais dans un rendu.
+# On n'écrase pas un excludesFile déjà configuré ailleurs.
+section "Gitignore global"
+if command -v git >/dev/null 2>&1; then
+	current=$(git config --global core.excludesFile || true)
+	if [ -z "$current" ] || [ "$current" = "$DIR/git/ignore" ]; then
+		git config --global core.excludesFile "$DIR/git/ignore"
+		ok "core.excludesFile → $DIR/git/ignore"
+	else
+		warn "core.excludesFile déjà réglé sur $current, laissé tel quel"
+	fi
+fi
+
 section "Terminé"
 printf "  Paquets recommandés (si tu as les droits) :\n"
 printf "    ${D}Arch  ${R} sudo pacman -S zsh zsh-autosuggestions zsh-syntax-highlighting zsh-completions starship\n"

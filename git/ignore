@@ -1,0 +1,22 @@
+# .gitignore global (core.excludesFile, posé par install.sh)
+# Rien de tout ça ne doit finir dans un dépôt de rendu.
+
+# Produits de compilation
+*.o
+*.d
+*.a
+*.so
+obj/
+a.out
+*.dSYM/
+
+# Sanitizers, valgrind, gdb
+vgcore.*
+.gdb_history
+
+# Éditeurs et système
+*.swp
+*~
+.vscode/
+.idea/
+.DS_Store
