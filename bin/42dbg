@@ -1,0 +1,74 @@
+#!/bin/sh
+# 42dbg — compile pour le débogueur (F5 dans VS Code) : -g3 -O0, sans optimisation.
+# Le binaire va dans ~/.cache/42debug/prog : rien n'est ajouté au dépôt de rendu.
+#
+# Usage : 42dbg fichier <fichier.c>   le fichier doit contenir un main ; s'il inclut
+#                                     "libft.h", les ft_*.c de la libft sont compilés
+#                                     avec lui (on peut entrer dans tes fonctions)
+#         42dbg projet [dossier]      make re avec -g3, puis débogue le NAME du Makefile
+
+OUT="$HOME/.cache/42debug"
+mkdir -p "$OUT"
+target="$OUT/prog"
+rm -f "$target"
+
+die() { printf '✗ %s\n' "$*" >&2; exit 1; }
+
+case "$1" in
+fichier)
+	f=$2
+	[ -f "$f" ] || die "fichier introuvable : $f"
+	case "$f" in *.c) ;; *) die "$f n'est pas un fichier .c" ;; esac
+	# F5 sur ft_xxx.c (pas de main) : on prend le test_xxx.c du dossier <projet>-tests
+	if ! grep -q 'main[[:space:]]*(' "$f"; then
+		base=$(basename "$f" .c)
+		proj=$(cd "$(dirname "$f")" && pwd)
+		tests="${proj}-tests"
+		test="$tests/test_${base#ft_}.c"
+		if [ -f "$test" ]; then
+			echo "→ $(basename "$f") n'a pas de main : je lance $(basename "$test")"
+			f=$test
+		else
+			die "$(basename "$f") n'a pas de main et $test n'existe pas.
+  Crée-le : cp $tests/_template.c $test   (puis écris le main et F5)"
+		fi
+	fi
+	dir=$(dirname "$f")
+	set -- "$f" -I"$dir"
+
+	# La libft : on compile ses sources avec le test pour avoir les symboles de debug
+	if grep -q '#[[:space:]]*include[[:space:]]*"libft.h"' "$f"; then
+		lib=
+		for d in "$dir" "$dir/libft" "$dir/../libft"; do
+			[ -f "$d/libft.h" ] && { lib=$d; break; }
+		done
+		[ -n "$lib" ] || die "libft.h inclus mais introuvable (cherché dans ., ./libft, ../libft)"
+		set -- "$@" -I"$lib"
+		for src in "$lib"/ft_*.c; do
+			[ -f "$src" ] && [ "$src" -ef "$f" ] && continue
+			[ -f "$src" ] && set -- "$@" "$src"
+		done
+	fi
+	grep -q '#[[:space:]]*include[[:space:]]*<bsd/' "$f" && set -- "$@" -lbsd
+
+	cc -g3 -O0 -Wall -Wextra "$@" -o "$target" || die "la compilation échoue (voir ci-dessus)"
+	echo "✓ compilé pour le debug : $(basename "$f")"
+	;;
+projet)
+	cd "${2:-.}" || exit 1
+	[ -f Makefile ] || die "pas de Makefile dans $(pwd)"
+	name=$(sed -n 's/^NAME[[:space:]]*[:?]*=[[:space:]]*//p' Makefile | head -1)
+	[ -n "$name" ] || die "pas de NAME dans le Makefile"
+	case "$name" in
+		*.a) die "$name est une bibliothèque, sans main. Ouvre un fichier de test et choisis « 42: déboguer le fichier courant »." ;;
+	esac
+	# Surcharger CC garde les CFLAGS du Makefile et passe aussi aux sous-make (libft)
+	make re CC="cc -g3 -O0" || die "make re échoue (voir ci-dessus)"
+	[ -x "$name" ] || die "$name introuvable après make"
+	ln -sf "$(pwd)/$name" "$target"
+	echo "✓ compilé pour le debug : $name"
+	;;
+*)
+	die "usage : 42dbg fichier <fichier.c> | 42dbg projet [dossier]"
+	;;
+esac

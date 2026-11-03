@@ -17,6 +17,13 @@
         "args": "42: format (c_formatter_42)",
         "when": "editorLangId == c"
     },
+    // Ctrl+Alt+R : tout vérifier avant de rendre
+    {
+        "key": "ctrl+alt+r",
+        "command": "workbench.action.tasks.runTask",
+        "args": "42: avant rendu",
+        "when": "editorLangId != http && editorLangId != plaintext"
+    },
     // F8 : norminette sur le fichier courant
     {
         "key": "f8",

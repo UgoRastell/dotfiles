@@ -1,0 +1,133 @@
+#!/bin/sh
+# 42check — tout vérifier avant de pousser un rendu, comme le fera l'évaluateur.
+#
+# Usage : 42check [fonctions autorisées...]
+#   42check                          → vérifie sans contrôler les fonctions externes
+#   42check malloc, free, write      → colle la liste « External functs » du sujet
+#
+# Étapes : dépôt git propre · norminette · compilation sans relink ·
+#          fonctions externes · libftTester (si libft.a) · README · make fclean
+
+BIN=$(cd "$(dirname "$0")" && pwd)
+
+if [ -t 1 ]; then
+	E=$(printf '\033')
+	G="$E[32m" Y="$E[33m" RED="$E[31m" M="$E[35m" D="$E[2m" R="$E[0m"
+else
+	G='' Y='' RED='' M='' D='' R=''
+fi
+
+[ -f Makefile ] || { echo "Pas de Makefile ici : lance 42check à la racine du projet."; exit 1; }
+
+fails=0; warns=0
+step() { printf "\n${M}── %s${R}\n" "$*"; }
+ok()   { printf "  ${G}✓${R} %s\n" "$*"; }
+ko()   { printf "  ${RED}✗ %s${R}\n" "$*"; fails=$((fails + 1)); }
+warn() { printf "  ${Y}!${R} %s\n" "$*"; warns=$((warns + 1)); }
+
+name=$(sed -n 's/^NAME[[:space:]]*[:?]*=[[:space:]]*//p' Makefile | head -1)
+printf "${M}42check${R} ${D}— %s (%s)${R}\n" "$(basename "$(pwd)")" "${name:-NAME ?}"
+
+# On part d'un dossier propre : les binaires d'un ancien make ne comptent pas
+make fclean >/dev/null 2>&1
+
+# 1. Git : seul ce qui est commité et poussé sera évalué
+step "Dépôt git"
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+	junk=$(git ls-files | grep -E '\.(o|a|out)$|(^|/)a\.out$|\.dSYM/|(^|/)\.vscode/')
+	[ -z "$junk" ] && ok "aucun fichier compilé dans le dépôt" ||
+		{ ko "fichiers à retirer du dépôt (git rm --cached) :"; echo "$junk" | sed 's/^/      /'; }
+	[ -n "$name" ] && git ls-files --error-unmatch "$name" >/dev/null 2>&1 &&
+		ko "$name est commité : le retirer (git rm --cached $name)"
+
+	changes=$(git status --porcelain --untracked-files=no)
+	[ -z "$changes" ] && ok "tout est commité" ||
+		{ warn "modifications non commitées (elles ne seront pas évaluées) :"; echo "$changes" | sed 's/^/      /'; }
+
+	untracked=$(git ls-files --others --exclude-standard)
+	[ -n "$untracked" ] &&
+		{ warn "fichiers jamais ajoutés à git (absents du rendu) :"; echo "$untracked" | sed 's/^/      /'; }
+
+	if git rev-parse '@{u}' >/dev/null 2>&1; then
+		ahead=$(git rev-list --count '@{u}..HEAD')
+		[ "$ahead" -eq 0 ] && ok "tout est poussé" || warn "$ahead commit(s) pas encore poussé(s) : git push"
+	else
+		warn "pas de branche distante suivie : rien n'est poussé"
+	fi
+	files=$(git ls-files '*.c' '*.h')
+else
+	warn "pas un dépôt git"
+	files=$(find . -name '*.c' -o -name '*.h')
+fi
+
+# 2. Norminette sur les fichiers rendus
+step "Norminette"
+if ! command -v norminette >/dev/null 2>&1; then
+	ko "norminette introuvable (pipx install norminette)"
+elif [ -z "$files" ]; then
+	warn "aucun fichier .c/.h à vérifier"
+else
+	# shellcheck disable=SC2086
+	errors=$(norminette $files 2>&1 | grep -v ': OK!$')
+	[ -z "$errors" ] && ok "$(echo "$files" | wc -w) fichier(s) OK" ||
+		{ ko "erreurs de norme :"; echo "$errors" | sed 's/^/      /'; }
+fi
+
+# 3. Compilation propre + relink (42relink fait le 1er make)
+step "Compilation et relink"
+grep -qE -- '-fsanitize|-g3?([[:space:]]|$)' Makefile && ko "flags de debug (-g / -fsanitize) dans le Makefile"
+out=$("$BIN/42relink" 2>&1) || fails=$((fails + 1))
+echo "$out" | sed '1d'
+built=0
+[ -n "$name" ] && [ -f "$name" ] && built=1
+
+# 4. Fonctions externes
+step "Fonctions externes"
+if [ "$built" -eq 0 ]; then
+	ko "${name:-NAME (absent du Makefile)} non compilé : impossible de vérifier"
+elif [ $# -eq 0 ]; then
+	"$BIN/42funcs" | sed '1d'
+	warn "pas de liste autorisée : 42check malloc, free, write…"
+else
+	out=$("$BIN/42funcs" "$@" 2>&1) || fails=$((fails + 1))
+	echo "$out" | sed '1d'
+fi
+
+# 5. Testeur libft
+if [ "$name" = "libft.a" ]; then
+	step "libftTester (partie obligatoire)"
+	if [ "$built" -eq 0 ]; then
+		ko "libft.a ne compile pas : tests non lancés"
+	elif [ -d "$HOME/libftTester" ] ||
+		git clone -q https://github.com/Tripouille/libftTester.git "$HOME/libftTester"; then
+		make -C "$HOME/libftTester" LIBFT_PATH="$(pwd)" m || fails=$((fails + 1))
+	else
+		ko "impossible de récupérer libftTester (pas de réseau ?)"
+	fi
+fi
+
+# 6. README exigé par les sujets récents
+step "README.md"
+if [ ! -f README.md ]; then
+	warn "pas de README.md (obligatoire dans les sujets récents)"
+elif head -1 README.md | grep -qE '^[*_]This (activity|project) has been created as part of the 42 curriculum by .+[*_][[:space:]]*$'; then
+	ok "1re ligne en italique avec le(s) login(s)"
+else
+	warn "1re ligne attendue : *This activity has been created as part of the 42 curriculum by <login>*"
+fi
+for s in Description Instructions Resources; do
+	[ -f README.md ] && { grep -qiE "^#+[[:space:]]*$s" README.md || warn "section « $s » absente du README"; }
+done
+
+# 7. On repart propre
+make fclean >/dev/null 2>&1
+
+printf "\n"
+if [ "$fails" -eq 0 ] && [ "$warns" -eq 0 ]; then
+	printf "${G}✓ prêt à rendre${R}\n"
+elif [ "$fails" -eq 0 ]; then
+	printf "${Y}! %s avertissement(s), pas d'erreur${R}\n" "$warns"
+else
+	printf "${RED}✗ %s erreur(s), %s avertissement(s)${R}\n" "$fails" "$warns"
+	exit 1
+fi

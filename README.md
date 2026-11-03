@@ -161,7 +161,7 @@ Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour 
 | `git/template/hooks/pre-commit` | bloque tout commit dont le C n'est pas conforme à la norme |
 | `git/ignore` | `.gitignore` global : `.o`, `.a`, `a.out`, `obj/`… ne partent jamais dans un rendu |
 | `templates/Makefile` | squelette de Makefile 42 (no-relink, dépendances des headers, sortie colorée) |
-| `bin/` | scripts ajoutés au `PATH` : `42relink`, `42funcs` (marchent aussi depuis bash) |
+| `bin/` | scripts ajoutés au `PATH` : `42relink`, `42funcs`, `42check`, `42dbg` (marchent aussi depuis bash) |
 | `vscode/` | réglages VS Code (norme 42 limitée au C et aux Makefiles), tâches 42, F7/F8, liste d'extensions installées par `install.sh` |
 
 ## Raccourcis
@@ -180,6 +180,8 @@ Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour 
 | `mini` | mini-moulinette, si elle est clonée dans `~/mini-moulinette` |
 | `42relink` | lance `make` deux fois (et `make bonus` s'il existe) : ✗ si le 2e passage réécrit un fichier |
 | `42funcs [liste]` | fonctions externes appelées par le `NAME` du Makefile ; avec la liste du sujet, ✗ sur les interdites |
+| `42check [liste]` | avant de rendre : git propre et poussé, norminette, relink, fonctions externes, libftTester (si `libft.a`), README |
+| `42dbg fichier x.c` / `42dbg projet` | compile en `-g3` pour le débogueur (utilisé par F5 dans VS Code) |
 | `42hook` | installe le hook norminette dans le dépôt courant |
 | `42make` | dépose le template de Makefile dans le dossier courant |
 
@@ -200,6 +202,8 @@ Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour 
 | `F7` | reformate le fichier C à la norme (c_formatter_42) |
 | `F8` | norminette sur le fichier courant |
 | `Ctrl+Shift+B` | `make`, erreurs cliquables dans l'onglet Problèmes |
+| `F5` | débogue (lldb) : le fichier de test ouvert + la libft, ou le projet (Makefile) avec des arguments |
+| `Ctrl+Alt+R` | « 42: avant rendu » (`42check`) |
 | `Tasks: Run Task` | `make re`, norminette projet, `42relink`, `42funcs`, libftTester |
 
 Les erreurs de norme s'affichent en direct dans le code (extension codam-norminette-3 + Error Lens).

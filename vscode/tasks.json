@@ -49,6 +49,29 @@
             "problemMatcher": []
         },
         {
+            "label": "42: avant rendu",
+            "detail": "git propre, norminette, relink, fonctions externes, libftTester, README",
+            "type": "shell",
+            "command": "${userHome}/dotfiles/bin/42check ${input:allowed}",
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "dedicated", "clear": true, "focus": true },
+            "problemMatcher": []
+        },
+        {
+            "label": "42: compiler pour le debug (fichier)",
+            "type": "shell",
+            "command": "${userHome}/dotfiles/bin/42dbg fichier '${file}'",
+            "presentation": { "reveal": "silent", "revealProblems": "onProblem" },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "42: compiler pour le debug (projet)",
+            "type": "shell",
+            "command": "${userHome}/dotfiles/bin/42dbg projet '${workspaceFolder}'",
+            "presentation": { "reveal": "silent", "revealProblems": "onProblem" },
+            "problemMatcher": ["$gcc"]
+        },
+        {
             "label": "42: libftTester",
             "type": "shell",
             "command": "zsh -ic 'libfttest'",

@@ -55,6 +55,44 @@
     // ── Norminette en direct (extension codam-norminette-3) ───
     "codam-norminette-3.command": "norminette",
 
+    // ── Débogage F5 (CodeLLDB) ────────────────────────────────
+    // « fichier courant » : le .c ouvert (avec un main) + la libft s'il l'inclut.
+    // « projet » : make re en -g3, puis le NAME du Makefile, avec des arguments.
+    // Le binaire va dans ~/.cache/42debug : rien n'arrive dans le dépôt.
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "42: déboguer le fichier courant",
+                "type": "lldb",
+                "request": "launch",
+                "program": "${userHome}/.cache/42debug/prog",
+                "cwd": "${fileDirname}",
+                "preLaunchTask": "42: compiler pour le debug (fichier)"
+            },
+            {
+                "name": "42: déboguer le projet (Makefile)",
+                "type": "lldb",
+                "request": "launch",
+                "program": "${userHome}/.cache/42debug/prog",
+                "args": "${input:debugArgs}",
+                "cwd": "${workspaceFolder}",
+                "preLaunchTask": "42: compiler pour le debug (projet)"
+            }
+        ],
+        "inputs": [
+            {
+                "id": "debugArgs",
+                "type": "promptString",
+                "description": "Arguments du programme (ex. 3 1 2), vide si aucun",
+                "default": ""
+            }
+        ]
+    },
+    "debug.openDebug": "openOnDebugBreak",
+    "debug.inlineValues": "on",
+
     // ── Terminal ──────────────────────────────────────────────
-    "terminal.integrated.defaultProfile.linux": "zsh"
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    "debug.onTaskErrors": "showErrors"
 }
