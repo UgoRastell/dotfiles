@@ -1,0 +1,16 @@
+[
+    // F7 : reformater le fichier C à la norme (comme dans vim)
+    {
+        "key": "f7",
+        "command": "workbench.action.tasks.runTask",
+        "args": "42: format (c_formatter_42)",
+        "when": "editorLangId == c"
+    },
+    // F8 : norminette sur le fichier courant
+    {
+        "key": "f8",
+        "command": "workbench.action.tasks.runTask",
+        "args": "42: norminette (fichier)",
+        "when": "editorLangId == c"
+    }
+]

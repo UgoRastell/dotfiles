@@ -53,6 +53,31 @@ section "Plugins vim"
 vim_plugin 42header   https://github.com/42Paris/42header.git     # header 42, touche F1
 vim_plugin catppuccin https://github.com/catppuccin/vim.git        # thème
 
+# VS Code : réglages norme 42 (C seulement), tâches, F7/F8, extensions.
+# Ignoré si VS Code n'est pas installé.
+section "VS Code"
+if command -v code >/dev/null 2>&1; then
+	case "$(uname)" in
+		Darwin) VSDIR="$HOME/Library/Application Support/Code/User" ;;
+		*)      VSDIR="$HOME/.config/Code/User" ;;
+	esac
+	for f in settings.json keybindings.json tasks.json; do
+		link "$DIR/vscode/$f" "$VSDIR/$f"
+	done
+	grep -v '^#' "$DIR/vscode/extensions.txt" | while read -r ext; do
+		[ -n "$ext" ] || continue
+		if code --list-extensions | grep -qix "$ext"; then
+			ok "extension $ext déjà présente"
+		elif code --install-extension "$ext" >/dev/null 2>&1; then
+			ok "extension $ext installée"
+		else
+			warn "échec de l'installation de $ext"
+		fi
+	done
+else
+	warn "VS Code (code) introuvable, section ignorée"
+fi
+
 # Hook pre-commit (norminette) appliqué aux dépôts créés ou clonés ensuite.
 # Les dépôts déjà existants ne sont pas touchés : y lancer `42hook`.
 section "Hook norminette"

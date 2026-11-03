@@ -1,0 +1,60 @@
+{
+    // ── Général (repris de l'ancienne config) ─────────────────
+    "workbench.iconTheme": "material-icon-theme",
+    "workbench.colorTheme": "One Dark Pro Darker",
+    "git.enableSmartCommit": true,
+    "git.confirmSync": false,
+    "explorer.confirmDelete": false,
+    "claudeCode.preferredLocation": "panel",
+    "claudeCode.selectedModel": "default",
+    "chat.viewSessions.orientation": "stacked",
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "github.copilot.enable": {
+        "*": false,
+        "plaintext": false,
+        "markdown": false,
+        "scminput": false
+    },
+
+    // ── Norme 42 : seulement pour C, headers et Makefile ──────
+    // (le reste — JS, Python… — garde ses réglages habituels)
+    "files.associations": {
+        "*.h": "c"
+    },
+    "[c]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 4,
+        "editor.detectIndentation": false,
+        "editor.rulers": [81],
+        "editor.formatOnSave": false,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true
+    },
+    "[makefile]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 4,
+        "editor.detectIndentation": false,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true
+    },
+    "editor.renderWhitespace": "boundary",
+
+    // ── IntelliSense C : mêmes flags que la moulinette ────────
+    "C_Cpp.default.compilerPath": "/usr/bin/cc",
+    "C_Cpp.default.cStandard": "gnu17",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+    "C_Cpp.default.includePath": ["${workspaceFolder}/**"],
+    "C_Cpp.default.compilerArgs": ["-Wall", "-Wextra", "-Werror"],
+    "C_Cpp.formatting": "disabled",
+
+    // ── Header 42 (Ctrl+Alt+H) ────────────────────────────────
+    "42header.username": "urastell",
+    "42header.email": "urastell@learner.42.tech",
+
+    // ── Norminette en direct (extension codam-norminette-3) ───
+    "codam-norminette-3.command": "norminette",
+
+    // ── Terminal ──────────────────────────────────────────────
+    "terminal.integrated.defaultProfile.linux": "zsh"
+}

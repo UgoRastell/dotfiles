@@ -1,0 +1,66 @@
+{
+    // Tâches disponibles dans tous les projets : Ctrl+Shift+B (make)
+    // ou « Tasks: Run Task ». Les commandes 42* viennent de ~/dotfiles/bin.
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "42: make",
+            "type": "shell",
+            "command": "make",
+            "group": { "kind": "build", "isDefault": true },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "42: make re",
+            "type": "shell",
+            "command": "make re",
+            "group": "build",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "42: norminette (projet)",
+            "type": "shell",
+            "command": "norminette",
+            "problemMatcher": []
+        },
+        {
+            "label": "42: norminette (fichier)",
+            "type": "shell",
+            "command": "norminette '${file}'",
+            "problemMatcher": []
+        },
+        {
+            "label": "42: format (c_formatter_42)",
+            "type": "shell",
+            "command": "c_formatter_42 '${file}'",
+            "presentation": { "reveal": "silent" },
+            "problemMatcher": []
+        },
+        {
+            "label": "42: relink",
+            "type": "shell",
+            "command": "make fclean && 42relink",
+            "problemMatcher": []
+        },
+        {
+            "label": "42: fonctions externes",
+            "type": "shell",
+            "command": "42funcs ${input:allowed}",
+            "problemMatcher": []
+        },
+        {
+            "label": "42: libftTester",
+            "type": "shell",
+            "command": "zsh -ic 'libfttest'",
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "allowed",
+            "type": "promptString",
+            "description": "Fonctions autorisées par le sujet (vide = juste lister)",
+            "default": "malloc free write"
+        }
+    ]
+}

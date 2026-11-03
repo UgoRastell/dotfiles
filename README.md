@@ -162,6 +162,7 @@ Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour 
 | `git/ignore` | `.gitignore` global : `.o`, `.a`, `a.out`, `obj/`… ne partent jamais dans un rendu |
 | `templates/Makefile` | squelette de Makefile 42 (no-relink, dépendances des headers, sortie colorée) |
 | `bin/` | scripts ajoutés au `PATH` : `42relink`, `42funcs` (marchent aussi depuis bash) |
+| `vscode/` | réglages VS Code (norme 42 limitée au C et aux Makefiles), tâches 42, F7/F8, liste d'extensions installées par `install.sh` |
 
 ## Raccourcis
 
@@ -190,6 +191,19 @@ Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour 
 | `F5` | C : compile avec les flags de la norme et exécute · Python : exécute |
 | `F6` | norminette sur le fichier courant |
 | `F7` | reformate le fichier à la norme ([c_formatter_42](https://github.com/dawnbeen/c_formatter_42)) ; le buffer reste intact en cas d'erreur |
+
+**VS Code**
+
+| Touche / action | Effet |
+| --- | --- |
+| `Ctrl+Alt+H` | insère / met à jour le header 42 (extension 42header) |
+| `F7` | reformate le fichier C à la norme (c_formatter_42) |
+| `F8` | norminette sur le fichier courant |
+| `Ctrl+Shift+B` | `make`, erreurs cliquables dans l'onglet Problèmes |
+| `Tasks: Run Task` | `make re`, norminette projet, `42relink`, `42funcs`, libftTester |
+
+Les erreurs de norme s'affichent en direct dans le code (extension codam-norminette-3 + Error Lens).
+Tabs, colonne 81, espaces de fin supprimés : seulement pour le C et les Makefiles, le reste (JS, Python…) n'est pas touché.
 
 ## Hook norminette
 
