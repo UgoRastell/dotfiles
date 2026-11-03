@@ -1,4 +1,15 @@
 [
+    // Ctrl+Alt+H : header 42. REST Client (humao.rest-client) prend le même
+    // raccourci pour son historique : on le lui retire.
+    {
+        "key": "ctrl+alt+h",
+        "command": "-rest-client.history"
+    },
+    {
+        "key": "ctrl+alt+h",
+        "command": "42header.insertHeader",
+        "when": "editorTextFocus"
+    },
     // F7 : reformater le fichier C à la norme (comme dans vim)
     {
         "key": "f7",

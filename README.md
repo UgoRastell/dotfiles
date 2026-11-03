@@ -196,7 +196,7 @@ Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour 
 
 | Touche / action | Effet |
 | --- | --- |
-| `Ctrl+Alt+H` | insère / met à jour le header 42 (extension 42header) |
+| `Ctrl+Alt+H` | insère / met à jour le header 42 (extension 42header ; raccourci retiré à REST Client) |
 | `F7` | reformate le fichier C à la norme (c_formatter_42) |
 | `F8` | norminette sur le fichier courant |
 | `Ctrl+Shift+B` | `make`, erreurs cliquables dans l'onglet Problèmes |
