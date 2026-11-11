@@ -36,8 +36,10 @@ fichier)
 	dir=$(dirname "$f")
 	set -- "$f" -I"$dir"
 
+	# Le fichier et les .h de son dossier (ex. tests.h qui inclut libft.h)
+	hdrs=$(find "$dir" -maxdepth 1 -name '*.h' ! -name libft.h)
 	# La libft : on compile ses sources avec le test pour avoir les symboles de debug
-	if grep -q '#[[:space:]]*include[[:space:]]*"libft.h"' "$f"; then
+	if grep -q '#[[:space:]]*include[[:space:]]*"libft.h"' "$f" $hdrs; then
 		lib=
 		for d in "$dir" "$dir/libft" "$dir/../libft"; do
 			[ -f "$d/libft.h" ] && { lib=$d; break; }
@@ -49,7 +51,7 @@ fichier)
 			[ -f "$src" ] && set -- "$@" "$src"
 		done
 	fi
-	grep -q '#[[:space:]]*include[[:space:]]*<bsd/' "$f" && set -- "$@" -lbsd
+	grep -q '#[[:space:]]*include[[:space:]]*<bsd/' "$f" $hdrs && set -- "$@" -lbsd
 
 	cc -g3 -O0 -Wall -Wextra "$@" -o "$target" || die "la compilation échoue (voir ci-dessus)"
 	echo "✓ compilé pour le debug : $(basename "$f")"
