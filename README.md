@@ -161,8 +161,8 @@ Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour 
 | `git/template/hooks/pre-commit` | bloque tout commit dont le C n'est pas conforme à la norme |
 | `git/ignore` | `.gitignore` global : `.o`, `.a`, `a.out`, `obj/`… ne partent jamais dans un rendu |
 | `templates/Makefile` | squelette de Makefile 42 (no-relink, dépendances des headers, sortie colorée) |
-| `bin/` | scripts ajoutés au `PATH` : `42relink`, `42funcs`, `42check`, `42dbg` (marchent aussi depuis bash) |
-| `vscode/` | réglages VS Code (norme 42 limitée au C et aux Makefiles), tâches 42, F7/F8, liste d'extensions installées par `install.sh` |
+| `bin/` | scripts ajoutés au `PATH` : `42relink`, `42funcs`, `42check`, `42dbg`, `42main` (marchent aussi depuis bash) |
+| `vscode/` | réglages VS Code (norme 42 limitée au C et aux Makefiles), tâches 42, F6/F7/F8, liste d'extensions installées par `install.sh` |
 
 ## Raccourcis
 
@@ -182,6 +182,7 @@ Pour la `libft`, lance aussi `libfttest` depuis son dossier (`libfttest b` pour 
 | `42funcs [liste]` | fonctions externes appelées par le `NAME` du Makefile ; avec la liste du sujet, ✗ sur les interdites |
 | `42check [liste]` | avant de rendre : git propre et poussé, norminette, relink, fonctions externes, libftTester (si `libft.a`), README |
 | `42dbg fichier x.c` / `42dbg projet` | compile en `-g3` pour le débogueur (utilisé par F5 dans VS Code) |
+| `42main ft_xxx.c` (ou `42main xxx`) | lance le `main` en commentaire à la fin du fichier sans le décommenter (F6 dans VS Code ; F5 le débogue) |
 | `42hook` | installe le hook norminette dans le dépôt courant |
 | `42make` | dépose le template de Makefile dans le dossier courant |
 

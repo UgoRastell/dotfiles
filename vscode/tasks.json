@@ -65,6 +65,15 @@
             "problemMatcher": ["$gcc"]
         },
         {
+            "label": "42: lancer le main du fichier",
+            "detail": "le main en commentaire a la fin de ft_xxx.c (42main)",
+            "type": "shell",
+            "command": "${userHome}/dotfiles/bin/42main '${file}'",
+            "options": { "cwd": "${fileDirname}" },
+            "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+            "problemMatcher": ["$gcc"]
+        },
+        {
             "label": "42: compiler pour le debug (projet)",
             "type": "shell",
             "command": "${userHome}/dotfiles/bin/42dbg projet '${workspaceFolder}'",

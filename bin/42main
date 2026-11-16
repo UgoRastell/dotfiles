@@ -1,0 +1,57 @@
+#!/bin/sh
+# 42main — lance le main qui est en commentaire à la fin d'un ft_xxx.c,
+# sans toucher au fichier (pas besoin de le décommenter puis recommenter).
+#
+# Usage : 42main ft_split.c        (ou juste : 42main split)
+#         42main --extract f.c     écrit le main dans ~/.cache/42main et affiche
+#                                  le chemin (utilisé par 42dbg pour F5)
+#
+# Le main est compilé avec toutes les sources ft_*.c du dossier, avec
+# AddressSanitizer + UBSan : une fuite ou un débordement s'affiche à la fin.
+
+OUT="$HOME/.cache/42main"
+mkdir -p "$OUT"
+
+die() { printf '✗ %s\n' "$*" >&2; exit 1; }
+
+extract=
+[ "$1" = "--extract" ] && { extract=1; shift; }
+f=$1
+[ -n "$f" ] || die "usage : 42main ft_xxx.c   (ou 42main xxx)"
+[ -f "$f" ] || [ ! -f "ft_$f.c" ] || f="ft_$f.c"
+[ -f "$f" ] || [ ! -f "$f.c" ] || f="$f.c"
+[ -f "$f" ] || die "fichier introuvable : $1"
+
+name=$(basename "$f" .c)
+src="$OUT/${name}_main.c"
+
+# Garde le dernier bloc /* ... */ qui contient un main (pas le header 42)
+awk '
+	!inc && /^\/\*/ && !/\*\// { inc = 1; buf = ""; next }
+	inc && /\*\// { inc = 0; if (buf ~ /(^|\n)int[ \t]+main[ \t]*\(/) block = buf; next }
+	inc { buf = buf $0 "\n" }
+	END { printf "%s", block }
+' "$f" > "$src.tmp"
+[ -s "$src.tmp" ] || { rm -f "$src.tmp"; die "pas de main en commentaire dans $(basename "$f")"; }
+{
+	printf '#include "libft.h"\n'
+	cat "$src.tmp"
+} > "$src"
+rm -f "$src.tmp"
+
+if [ -n "$extract" ]; then
+	echo "$src"
+	exit 0
+fi
+
+dir=$(cd "$(dirname "$f")" && pwd)
+set -- -I"$dir"
+for s in "$dir"/ft_*.c; do
+	[ -f "$s" ] && set -- "$@" "$s"
+done
+grep -q '#[[:space:]]*include[[:space:]]*<bsd/' "$src" && set -- "$@" -lbsd
+
+cc -g3 -Wall -Wextra -fsanitize=address,undefined "$src" "$@" -o "$OUT/$name" \
+	|| die "la compilation du main échoue (voir ci-dessus)"
+printf '\033[1m── main de %s ──\033[0m\n' "$(basename "$f")"
+"$OUT/$name"

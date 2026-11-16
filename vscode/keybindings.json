@@ -30,5 +30,12 @@
         "command": "workbench.action.tasks.runTask",
         "args": "42: norminette (fichier)",
         "when": "editorLangId == c"
+    },
+    // F6 : lancer le main en commentaire du fichier (42main)
+    {
+        "key": "f6",
+        "command": "workbench.action.tasks.runTask",
+        "args": "42: lancer le main du fichier",
+        "when": "editorLangId == c"
     }
 ]

@@ -19,18 +19,23 @@ fichier)
 	f=$2
 	[ -f "$f" ] || die "fichier introuvable : $f"
 	case "$f" in *.c) ;; *) die "$f n'est pas un fichier .c" ;; esac
-	# F5 sur ft_xxx.c (pas de main) : on prend le test_xxx.c du dossier <projet>-tests
-	if ! grep -q 'main[[:space:]]*(' "$f"; then
+	# F5 sur ft_xxx.c sans vrai main :
+	#   1. main en commentaire a la fin du fichier -> on debogue ce main (42main)
+	#   2. sinon le test_xxx.c du dossier <projet>-tests
+	srcdir=$(cd "$(dirname "$f")" && pwd)
+	if ! awk '/\/\*/ { c = 1 } !c && /^int[ \t]+main[ \t]*\(/ { m = 1 } /\*\// { c = 0 }
+		END { exit !m }' "$f"; then
 		base=$(basename "$f" .c)
-		proj=$(cd "$(dirname "$f")" && pwd)
-		tests="${proj}-tests"
+		tests="${srcdir}-tests"
 		test="$tests/test_${base#ft_}.c"
-		if [ -f "$test" ]; then
+		if main=$("$(dirname "$0")/42main" --extract "$f" 2>/dev/null); then
+			echo "→ je lance le main en commentaire de $(basename "$f")"
+			f=$main
+		elif [ -f "$test" ]; then
 			echo "→ $(basename "$f") n'a pas de main : je lance $(basename "$test")"
 			f=$test
 		else
-			die "$(basename "$f") n'a pas de main et $test n'existe pas.
-  Crée-le : cp $tests/_template.c $test   (puis écris le main et F5)"
+			die "$(basename "$f") n'a pas de main (ni en commentaire) et $test n'existe pas."
 		fi
 	fi
 	dir=$(dirname "$f")
@@ -41,7 +46,7 @@ fichier)
 	# La libft : on compile ses sources avec le test pour avoir les symboles de debug
 	if grep -q '#[[:space:]]*include[[:space:]]*"libft.h"' "$f" $hdrs; then
 		lib=
-		for d in "$dir" "$dir/libft" "$dir/../libft"; do
+		for d in "$dir" "$dir/libft" "$dir/../libft" "$srcdir"; do
 			[ -f "$d/libft.h" ] && { lib=$d; break; }
 		done
 		[ -n "$lib" ] || die "libft.h inclus mais introuvable (cherché dans ., ./libft, ../libft)"
